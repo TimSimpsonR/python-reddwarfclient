@@ -17,9 +17,3 @@ Python API
 ----------
 
 TODO: Add docs
-=======
-Python bindings for the Reddwarf API
-==================================================
-
-This is a client for the Reddwarf API.
-
