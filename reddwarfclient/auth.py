@@ -24,8 +24,8 @@ def get_authenticator_cls(cls_or_name):
             return KeyStoneV2Authenticator
         elif cls_or_name == "rax":
             return RaxAuthenticator
-        elif cls_or_name == "basic":
-            return BasicAuth
+        elif cls_or_name == "auth1.1":
+            return Auth1_1
         elif cls_or_name == "fake":
             return FakeAuth
 
@@ -41,6 +41,8 @@ class Authenticator(object):
     to obtain a token.
 
     """
+
+    URL_REQUIRED=True
 
     def __init__(self, client, type, url, username, password, tenant,
                  region=None, service_type=None, service_name=None,
@@ -96,6 +98,8 @@ class Authenticator(object):
 class KeyStoneV2Authenticator(Authenticator):
 
     def authenticate(self):
+        if self.url is None:
+            raise exceptions.AuthUrlNotGiven()
         return self._v2_auth(self.url)
 
     def _v2_auth(self, url):
@@ -113,10 +117,12 @@ class KeyStoneV2Authenticator(Authenticator):
         return self._authenticate(url, body)
 
 
-class BasicAuth(Authenticator):
+class Auth1_1(Authenticator):
 
     def authenticate(self):
         """Authenticate against a v2.0 auth service."""
+        if self.url is None:
+            raise exceptions.AuthUrlNotGiven()
         auth_url = self.url
         body = {"credentials": {"username": self.username,
                                 "key": self.password}}
@@ -144,6 +150,8 @@ class BasicAuth(Authenticator):
 class RaxAuthenticator(Authenticator):
 
     def authenticate(self):
+        if self.url is None:
+            raise exceptions.AuthUrlNotGiven()
         return self._rax_auth(self.url)
 
     def _rax_auth(self, url):
@@ -194,8 +202,8 @@ class ServiceCatalog(object):
         self.service_url = service_url
         self.management_url = None
         self.public_url = None
-        self._load()
         self.root_key = root_key
+        self._load()
 
     def _load(self):
         if not self.service_url:
